@@ -32,7 +32,7 @@ Este é um projeto de chatbot para WhatsApp desenvolvido em Node.js, projetado p
 
 1.  **Clone o repositório:**
     ```bash
-    git clone <url-do-seu-repositorio>
+    git clone https://github.com/ohguinascimento/BOTPIZZA_TESTE
     cd BOTPIZZA_TESTE
     ```
 
