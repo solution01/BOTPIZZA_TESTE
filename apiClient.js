@@ -2,12 +2,21 @@ const axios = require('axios');
 
 const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL;
 const MERCADO_PAGO_TOKEN = process.env.MERCADO_PAGO_TOKEN;
+const N8N_USER = process.env.N8N_BASIC_AUTH_USER;
+const N8N_PASSWORD = process.env.N8N_BASIC_AUTH_PASSWORD;
 
 async function verificarCliente(nomeCompleto, cpf) {
-  const response = await axios.post(N8N_WEBHOOK_URL, {
-    nomeCompleto,
-    cpf,
-  });
+  const response = await axios.post(
+    N8N_WEBHOOK_URL,
+    {
+      nomeCompleto,
+      cpf,
+    },
+    {
+      // Adiciona o cabeçalho de autenticação básica
+      auth: { username: N8N_USER, password: N8N_PASSWORD },
+    }
+  );
   return response.data;
 }
 

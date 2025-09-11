@@ -1,5 +1,5 @@
-const apiClient = require('../apiClient');
-const { allPizzas, bebidas } = require('../menu');
+const apiClient = require('./apiClient');
+const { allPizzas, bebidas } = require('./menu');
 
 async function verificarPagamentoAutomatico(idPagamento, sock, from) {
   let tentativas = 0;

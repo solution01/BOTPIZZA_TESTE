@@ -3,9 +3,9 @@ const {
   pizzasDoces,
   bebidas,
   allPizzas,
-} = require('../menu');
+} = require('./menu');
 
-async function handleOrder(sock, from, pedido, text) {
+async function handleOrder(sock, from, pedido, text, pedidosPorUser) {
   if (pedido.etapa === 'menu' || text.toLowerCase() === 'menu') {
     await sock.sendMessage(from, {
       image: { url: 'https://i.ibb.co/cSTdn85L/Copilot-20250805-124207.png' },

@@ -2,11 +2,11 @@ const pedidosPorUser = {}; // Guarda pedidos por usuário (jid)
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
-const { downloadMediaMessage } = require('baileys-pro');
+const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 
-const handleRegistration = require('./handlers/registrationHandler');
-const handleOrder = require('./handlers/orderHandler');
-const handleCheckout = require('./handlers/checkoutHandler');
+const handleRegistration = require('./registrationHandler');
+const handleOrder = require('./orderHandler');
+const handleCheckout = require('./checkoutHandler');
 
 const registrationEtapas = ['saudacao', 'aguardando_nome', 'aguardando_cpf'];
 const orderEtapas = [
@@ -96,7 +96,7 @@ async function handleMensagem(sock, msg) {
     if (registrationEtapas.includes(etapaAtual)) {
       resultado = await handleRegistration(sock, from, pedido, text);
     } else if (orderEtapas.includes(etapaAtual)) {
-      resultado = await handleOrder(sock, from, pedido, text);
+      resultado = await handleOrder(sock, from, pedido, text, pedidosPorUser);
     } else if (checkoutEtapas.includes(etapaAtual)) {
       resultado = await handleCheckout(sock, from, pedido, text);
     }

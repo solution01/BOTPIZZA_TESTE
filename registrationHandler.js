@@ -1,4 +1,4 @@
-const apiClient = require('../apiClient');
+const apiClient = require('./apiClient');
 
 async function handleRegistration(sock, from, pedido, text) {
   if (pedido.etapa === 'saudacao') {
