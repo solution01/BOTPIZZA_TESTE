@@ -1,9 +1,0 @@
-{
-    "type": "object",
-    "properties": {
-        "@odata.context": {
-            "type": "string"
-        }
-    },
-    "version": 4
-}
