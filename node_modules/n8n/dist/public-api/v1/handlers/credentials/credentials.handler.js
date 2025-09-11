@@ -40,7 +40,7 @@ module.exports = {
         async (req, res) => {
             const { id: credentialId } = req.params;
             let credential;
-            if (!['global:owner', 'global:admin'].includes(req.user.role)) {
+            if (!['global:owner', 'global:admin'].includes(req.user.role.slug)) {
                 const shared = await (0, credentials_service_1.getSharedCredentials)(req.user.id, credentialId);
                 if (shared?.role === 'credential:owner') {
                     credential = shared.credentials;

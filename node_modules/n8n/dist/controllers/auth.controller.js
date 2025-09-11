@@ -84,7 +84,7 @@ let AuthController = class AuthController {
         }
         if ((0, sso_helpers_1.isSamlCurrentAuthenticationMethod)()) {
             const preliminaryUser = await (0, auth_1.handleEmailLogin)(emailOrLdapLoginId, password);
-            if (preliminaryUser?.role === 'global:owner' ||
+            if (preliminaryUser?.role.slug === db_1.GLOBAL_OWNER_ROLE.slug ||
                 preliminaryUser?.settings?.allowSSOManualLogin) {
                 user = preliminaryUser;
                 usedAuthenticationMethod = 'email';
@@ -95,7 +95,7 @@ let AuthController = class AuthController {
         }
         else if ((0, sso_helpers_1.isLdapCurrentAuthenticationMethod)()) {
             const preliminaryUser = await (0, auth_1.handleEmailLogin)(emailOrLdapLoginId, password);
-            if (preliminaryUser?.role === 'global:owner') {
+            if (preliminaryUser?.role.slug === db_1.GLOBAL_OWNER_ROLE.slug) {
                 user = preliminaryUser;
                 usedAuthenticationMethod = 'email';
             }

@@ -59,12 +59,14 @@ let PublicApiKeyService = class PublicApiKeyService {
         await this.apiKeyRepository.update({ id: apiKeyId, userId: user.id }, { label, scopes });
     }
     async getUserForApiKey(apiKey) {
-        return await this.userRepository
-            .createQueryBuilder('user')
-            .innerJoin(db_1.ApiKey, 'apiKey', 'apiKey.userId = user.id')
-            .where('apiKey.apiKey = :apiKey', { apiKey })
-            .select('user')
-            .getOne();
+        return await this.userRepository.findOne({
+            where: {
+                apiKeys: {
+                    apiKey,
+                },
+            },
+            relations: ['role'],
+        });
     }
     redactApiKey(apiKey) {
         const visiblePart = apiKey.slice(-REDACT_API_KEY_REVEAL_COUNT);

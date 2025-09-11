@@ -57,7 +57,7 @@ let PasswordResetController = class PasswordResetController {
             this.logger.debug('No user found in the system');
             return;
         }
-        if (user.role !== 'global:owner' && !this.license.isWithinUsersLimit()) {
+        if (user.role.slug !== db_1.GLOBAL_OWNER_ROLE.slug && !this.license.isWithinUsersLimit()) {
             this.logger.debug('Request to send password reset email failed because the user limit was reached');
             throw new forbidden_error_1.ForbiddenError(constants_1.RESPONSE_ERROR_MESSAGES.USERS_QUOTA_REACHED);
         }
@@ -107,7 +107,7 @@ let PasswordResetController = class PasswordResetController {
         const user = await this.authService.resolvePasswordResetToken(token);
         if (!user)
             throw new not_found_error_1.NotFoundError('');
-        if (user.role !== 'global:owner' && !this.license.isWithinUsersLimit()) {
+        if (user.role.slug !== db_1.GLOBAL_OWNER_ROLE.slug && !this.license.isWithinUsersLimit()) {
             this.logger.debug('Request to resolve password token failed because the user limit was reached', { userId: user.id });
             throw new forbidden_error_1.ForbiddenError(constants_1.RESPONSE_ERROR_MESSAGES.USERS_QUOTA_REACHED);
         }

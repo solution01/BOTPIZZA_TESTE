@@ -41,13 +41,17 @@ let Reset = class Reset extends base_command_1.BaseCommand {
         this.logger.info('Successfully reset the database to default user state.');
     }
     async getInstanceOwner() {
-        const owner = await di_1.Container.get(db_1.UserRepository).findOneBy({ role: 'global:owner' });
+        const owner = await di_1.Container.get(db_1.UserRepository).findOneBy({
+            role: { slug: db_1.GLOBAL_OWNER_ROLE.slug },
+        });
         if (owner)
             return owner;
         const user = new db_1.User();
         Object.assign(user, defaultUserProps);
         await di_1.Container.get(db_1.UserRepository).save(user);
-        return await di_1.Container.get(db_1.UserRepository).findOneByOrFail({ role: 'global:owner' });
+        return await di_1.Container.get(db_1.UserRepository).findOneByOrFail({
+            role: { slug: db_1.GLOBAL_OWNER_ROLE.slug },
+        });
     }
     async catch(error) {
         this.logger.error('Error resetting database. See log messages for details.');

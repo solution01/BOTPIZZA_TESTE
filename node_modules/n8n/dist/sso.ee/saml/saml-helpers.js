@@ -62,7 +62,7 @@ async function createUserFromSamlAttributes(attributes) {
             email: attributes.email.toLowerCase(),
             firstName: attributes.firstName,
             lastName: attributes.lastName,
-            role: 'global:member',
+            role: { slug: 'global:member' },
             password: await di_1.Container.get(password_utility_1.PasswordUtility).hash(randomPassword),
         }, trx);
         await trx.save(trx.create(db_1.AuthIdentity, {
@@ -94,8 +94,15 @@ async function updateUserFromSamlAttributes(user, attributes) {
     user.lastName = attributes.lastName;
     const resultUser = await di_1.Container.get(db_1.UserRepository).save(user, { transaction: false });
     if (!resultUser)
-        throw new auth_error_1.AuthError('Could not create User');
-    return resultUser;
+        throw new auth_error_1.AuthError('Could not update User');
+    const userWithRole = await di_1.Container.get(db_1.UserRepository).findOne({
+        where: { id: resultUser.id },
+        relations: ['role'],
+        transaction: false,
+    });
+    if (!userWithRole)
+        throw new auth_error_1.AuthError('Failed to fetch user!');
+    return userWithRole;
 }
 function getMappedSamlAttributesFromFlowResult(flowResult, attributeMapping) {
     const result = {

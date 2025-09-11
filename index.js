@@ -4,7 +4,7 @@ const {
   makeCacheableSignalKeyStore,
   fetchLatestWaWebVersion,
   Browsers,
-} = require('baileys-pro');
+} = require('@whiskeysockets/baileys');
 const { handleMensagem } = require('./dialogos');
 const P = require('pino');
 const readline = require('readline');
@@ -46,22 +46,33 @@ async function startBot() {
     },
   });
 
-  // 📲 Pairing Code automático
-  if (!sock.authState.creds.registered) {
-    const numero = await askQuestion(
-      '📞 Digite seu número no formato DDI + DDD + número (ex: 5511999999999): '
-    );
+  // Se não estiver registrado e rodando com PM2, não podemos parear.
+  // Avisamos o usuário e saímos de forma limpa para evitar o loop de reinicialização.
+  if (!sock.authState.creds.registered && process.env.PM2_INSTANCE_ID !== undefined) {
+    console.error('❌ Bot não está registrado. Por favor, execute "node index.js" uma vez para fazer o pareamento do WhatsApp antes de usar o PM2.');
+    process.exit(0); // Saída limpa para o PM2 não reiniciar
+  }
 
-    if (!/^\d{12,13}$/.test(numero)) {
-      console.log('❌ Número inválido. Certifique-se de usar apenas números.');
+  // 📲 Pairing Code - só executa em modo interativo (não via PM2)
+  // A variável de ambiente `PM2_INSTANCE_ID` só existe quando rodando via PM2
+  if (!sock.authState.creds.registered && process.env.PM2_INSTANCE_ID === undefined) {
+    try {
+      const numero = await askQuestion(
+        '📞 Digite seu número no formato DDI + DDD + número (ex: 5511999999999): '
+      );
+      if (!/^\d{12,13}$/.test(numero)) {
+        console.log('❌ Número inválido. Certifique-se de usar apenas números.');
+        process.exit(1);
+      }
+      const codigoPareamento = await sock.requestPairingCode(numero);
+      console.log(`📲 Código de pareamento gerado: ${codigoPareamento}`);
+      console.log(
+        '✅ Vá até o WhatsApp > Aparelhos Conectados > Conectar com código e insira esse código.'
+      );
+    } catch (e) {
+      console.error('❌ Falha ao iniciar o pareamento interativo.', e);
       process.exit(1);
     }
-
-    const codigoPareamento = await sock.requestPairingCode(numero);
-    console.log(`📲 Código de pareamento gerado: ${codigoPareamento}`);
-    console.log(
-      '✅ Vá até o WhatsApp > Aparelhos Conectados > Conectar com código e insira esse código.'
-    );
   }
 
   // Eventos de conexão
@@ -77,10 +88,14 @@ async function startBot() {
       console.log('❌ Conexão fechada, status code:', statusCode);
       console.log('⚠️ Se precisar, apague a pasta "./QR" e reconecte.');
 
-      // 🔁 Reiniciar o bot automaticamente se for erro 515 (ex: pareamento expirado)
-      if (statusCode === 515) {
-        console.log('🔁 Reiniciando o bot devido ao código 515...');
-        await startBot(); // reinicia o bot
+      // Se o erro for de autenticação (401) ou pareamento expirado (515),
+      // a sessão é inválida. O bot deve parar para ser pareado novamente.
+      if (statusCode === 401 || statusCode === 515) {
+        console.error('❌ Erro de autenticação. A sessão é inválida. Apague a pasta "./QR" e reinicie o bot manualmente com "node index.js" para parear novamente.');
+        process.exit(1); // Sai com erro para que o PM2 possa registrar a falha.
+      } else {
+        console.log('🔁 Tentando reconectar...');
+        // A biblioteca Baileys tentará reconectar automaticamente na maioria dos outros casos.
       }
     }
   });

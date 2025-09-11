@@ -19,7 +19,7 @@ let AccessService = class AccessService {
         this.workflowFinderService = workflowFinderService;
     }
     async hasReadAccess(userId, workflowId) {
-        const user = await this.userRepository.findOneBy({ id: userId });
+        const user = await this.userRepository.findOne({ where: { id: userId }, relations: ['role'] });
         if (!user)
             return false;
         const workflow = await this.workflowFinderService.findWorkflowForUser(workflowId, user, [

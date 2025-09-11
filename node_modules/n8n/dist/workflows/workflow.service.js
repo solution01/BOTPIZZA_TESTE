@@ -57,7 +57,6 @@ const n8n_core_1 = require("n8n-core");
 const n8n_workflow_1 = require("n8n-workflow");
 const uuid_1 = require("uuid");
 const active_workflow_manager_1 = require("../active-workflow-manager");
-const config_2 = __importDefault(require("../config"));
 const folder_not_found_error_1 = require("../errors/folder-not-found.error");
 const bad_request_error_1 = require("../errors/response-errors/bad-request.error");
 const not_found_error_1 = require("../errors/response-errors/not-found.error");
@@ -208,7 +207,7 @@ let WorkflowService = class WorkflowService {
                 delete workflowSettings[key];
             }
         }
-        if (workflowSettings.executionTimeout === config_2.default.get('executions.timeout')) {
+        if (workflowSettings.executionTimeout === this.globalConfig.executions.timeout) {
             delete workflowSettings.executionTimeout;
         }
         if (workflowUpdateData.name) {

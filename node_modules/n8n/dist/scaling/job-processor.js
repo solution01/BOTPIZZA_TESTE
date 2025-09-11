@@ -41,29 +41,27 @@ var __importStar = (this && this.__importStar) || (function () {
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.JobProcessor = void 0;
 const backend_common_1 = require("@n8n/backend-common");
+const config_1 = require("@n8n/config");
 const db_1 = require("@n8n/db");
 const di_1 = require("@n8n/di");
 const n8n_core_1 = require("n8n-core");
 const n8n_workflow_1 = require("n8n-workflow");
-const config_1 = __importDefault(require("../config"));
 const execution_lifecycle_hooks_1 = require("../execution-lifecycle/execution-lifecycle-hooks");
 const manual_execution_service_1 = require("../manual-execution.service");
 const node_types_1 = require("../node-types");
 const WorkflowExecuteAdditionalData = __importStar(require("../workflow-execute-additional-data"));
 let JobProcessor = class JobProcessor {
-    constructor(logger, executionRepository, workflowRepository, nodeTypes, instanceSettings, manualExecutionService) {
+    constructor(logger, executionRepository, workflowRepository, nodeTypes, instanceSettings, manualExecutionService, executionsConfig) {
         this.logger = logger;
         this.executionRepository = executionRepository;
         this.workflowRepository = workflowRepository;
         this.nodeTypes = nodeTypes;
         this.instanceSettings = instanceSettings;
         this.manualExecutionService = manualExecutionService;
+        this.executionsConfig = executionsConfig;
         this.runningJobs = {};
         this.logger = this.logger.scoped('scaling');
     }
@@ -97,10 +95,10 @@ let JobProcessor = class JobProcessor {
             staticData = workflowData.staticData;
         }
         const workflowSettings = execution.workflowData.settings ?? {};
-        let workflowTimeout = workflowSettings.executionTimeout ?? config_1.default.getEnv('executions.timeout');
+        let workflowTimeout = workflowSettings.executionTimeout ?? this.executionsConfig.timeout;
         let executionTimeoutTimestamp;
         if (workflowTimeout > 0) {
-            workflowTimeout = Math.min(workflowTimeout, config_1.default.getEnv('executions.maxTimeout'));
+            workflowTimeout = Math.min(workflowTimeout, this.executionsConfig.maxTimeout);
             executionTimeoutTimestamp = Date.now() + workflowTimeout * 1000;
         }
         const workflow = new n8n_workflow_1.Workflow({
@@ -245,6 +243,7 @@ exports.JobProcessor = JobProcessor = __decorate([
         db_1.WorkflowRepository,
         node_types_1.NodeTypes,
         n8n_core_1.InstanceSettings,
-        manual_execution_service_1.ManualExecutionService])
+        manual_execution_service_1.ManualExecutionService,
+        config_1.ExecutionsConfig])
 ], JobProcessor);
 //# sourceMappingURL=job-processor.js.map

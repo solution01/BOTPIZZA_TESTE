@@ -1,4 +1,5 @@
 import { Logger } from '@n8n/backend-common';
+import { ExecutionsConfig } from '@n8n/config';
 import { ExecutionRepository } from '@n8n/db';
 import type { ExecutionLifecycleHooks } from 'n8n-core';
 import { ErrorReporter, InstanceSettings } from 'n8n-core';
@@ -23,9 +24,10 @@ export declare class WorkflowRunner {
     private readonly manualExecutionService;
     private readonly executionDataService;
     private readonly eventService;
+    private readonly executionsConfig;
     private scalingService;
     private executionsMode;
-    constructor(logger: Logger, errorReporter: ErrorReporter, activeExecutions: ActiveExecutions, executionRepository: ExecutionRepository, workflowStaticDataService: WorkflowStaticDataService, nodeTypes: NodeTypes, credentialsPermissionChecker: CredentialsPermissionChecker, instanceSettings: InstanceSettings, manualExecutionService: ManualExecutionService, executionDataService: ExecutionDataService, eventService: EventService);
+    constructor(logger: Logger, errorReporter: ErrorReporter, activeExecutions: ActiveExecutions, executionRepository: ExecutionRepository, workflowStaticDataService: WorkflowStaticDataService, nodeTypes: NodeTypes, credentialsPermissionChecker: CredentialsPermissionChecker, instanceSettings: InstanceSettings, manualExecutionService: ManualExecutionService, executionDataService: ExecutionDataService, eventService: EventService, executionsConfig: ExecutionsConfig);
     setExecutionMode(mode: 'regular' | 'queue'): void;
     processError(error: ExecutionError | ExecutionNotFoundError, startedAt: Date, executionMode: WorkflowExecuteMode, executionId: string, hooks?: ExecutionLifecycleHooks): Promise<void>;
     run(data: IWorkflowExecutionDataProcess, loadStaticData?: boolean, realtime?: boolean, restartExecutionId?: string, responsePromise?: IDeferredPromise<IExecuteResponsePromiseData>): Promise<string>;

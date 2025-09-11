@@ -14,6 +14,7 @@ export declare const resolveBinaryAttributes: (entries: LdapUser[]) => void;
 export declare const createFilter: (filter: string, userFilter: string) => string;
 export declare const escapeFilter: (filter: string) => string;
 export declare const getAuthIdentityByLdapId: (idAttributeValue: string) => Promise<AuthIdentity | null>;
+export declare const getUserByLdapId: (idAttributeValue: string) => Promise<User | null>;
 export declare const getUserByEmail: (email: string) => Promise<User | null>;
 export declare const mapLdapAttributesToUser: (ldapUser: LdapUser, ldapConfig: LdapConfig) => [AuthIdentity["providerId"], Pick<User, "email" | "firstName" | "lastName">];
 export declare const getLdapIds: () => Promise<string[]>;

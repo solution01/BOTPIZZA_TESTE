@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteAllLdapIdentities = exports.updateLdapUserOnLocalDb = exports.createLdapUserOnLocalDb = exports.createLdapAuthIdentity = exports.getMappingAttributes = exports.formatUrl = exports.getLdapSynchronizations = exports.saveLdapSynchronization = exports.processUsers = exports.mapLdapUserToDbUser = exports.getLdapUsers = exports.getLdapIds = exports.mapLdapAttributesToUser = exports.getUserByEmail = exports.getAuthIdentityByLdapId = exports.escapeFilter = exports.createFilter = exports.resolveBinaryAttributes = exports.resolveEntryBinaryAttributes = exports.validateLdapConfigurationSchema = exports.isLdapLoginEnabled = exports.getLdapLoginLabel = exports.isLdapEnabled = void 0;
+exports.deleteAllLdapIdentities = exports.updateLdapUserOnLocalDb = exports.createLdapUserOnLocalDb = exports.createLdapAuthIdentity = exports.getMappingAttributes = exports.formatUrl = exports.getLdapSynchronizations = exports.saveLdapSynchronization = exports.processUsers = exports.mapLdapUserToDbUser = exports.getLdapUsers = exports.getLdapIds = exports.mapLdapAttributesToUser = exports.getUserByEmail = exports.getUserByLdapId = exports.getAuthIdentityByLdapId = exports.escapeFilter = exports.createFilter = exports.resolveBinaryAttributes = exports.resolveEntryBinaryAttributes = exports.validateLdapConfigurationSchema = exports.isLdapLoginEnabled = exports.getLdapLoginLabel = exports.isLdapEnabled = void 0;
 const config_1 = require("@n8n/config");
 const db_1 = require("@n8n/db");
 const di_1 = require("@n8n/di");
@@ -61,6 +61,18 @@ const getAuthIdentityByLdapId = async (idAttributeValue) => {
     });
 };
 exports.getAuthIdentityByLdapId = getAuthIdentityByLdapId;
+const getUserByLdapId = async (idAttributeValue) => {
+    return await di_1.Container.get(db_1.UserRepository).findOne({
+        relations: { role: true },
+        where: {
+            authIdentities: {
+                providerId: idAttributeValue,
+                providerType: 'ldap',
+            },
+        },
+    });
+};
+exports.getUserByLdapId = getUserByLdapId;
 const getUserByEmail = async (email) => {
     return await di_1.Container.get(db_1.UserRepository).findOne({
         where: { email },
@@ -103,7 +115,7 @@ const mapLdapUserToDbUser = (ldapUser, ldapConfig, toCreate = false) => {
     const [ldapId, data] = (0, exports.mapLdapAttributesToUser)(ldapUser, ldapConfig);
     Object.assign(user, data);
     if (toCreate) {
-        user.role = 'global:member';
+        user.role = db_1.GLOBAL_MEMBER_ROLE;
         user.password = (0, n8n_workflow_1.randomString)(8);
         user.disabled = false;
     }
@@ -189,7 +201,7 @@ exports.createLdapAuthIdentity = createLdapAuthIdentity;
 const createLdapUserOnLocalDb = async (data, ldapId) => {
     const { user } = await di_1.Container.get(db_1.UserRepository).createUserWithProject({
         password: (0, n8n_workflow_1.randomString)(8),
-        role: 'global:member',
+        role: db_1.GLOBAL_MEMBER_ROLE,
         ...data,
     });
     await (0, exports.createLdapAuthIdentity)(user, ldapId);

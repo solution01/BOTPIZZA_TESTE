@@ -48,7 +48,8 @@ let OwnerController = class OwnerController {
             throw new bad_request_error_1.BadRequestError('Instance owner already setup');
         }
         let owner = await this.userRepository.findOneOrFail({
-            where: { role: 'global:owner' },
+            where: { role: { slug: db_1.GLOBAL_OWNER_ROLE.slug } },
+            relations: ['role'],
         });
         owner.email = email;
         owner.firstName = firstName;

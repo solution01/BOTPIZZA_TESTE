@@ -35,7 +35,7 @@ let ApiKeysController = class ApiKeysController {
         this.publicApiKeyService = publicApiKeyService;
     }
     async createApiKey(req, _res, body) {
-        if (!this.publicApiKeyService.apiKeyHasValidScopesForRole(req.user.role, body.scopes)) {
+        if (!this.publicApiKeyService.apiKeyHasValidScopesForRole(req.user, body.scopes)) {
             throw new bad_request_error_1.BadRequestError('Invalid scopes for user role');
         }
         const newApiKey = await this.publicApiKeyService.createPublicApiKeyForUser(req.user, body);
@@ -57,15 +57,14 @@ let ApiKeysController = class ApiKeysController {
         return { success: true };
     }
     async updateApiKey(req, _res, apiKeyId, body) {
-        if (!this.publicApiKeyService.apiKeyHasValidScopesForRole(req.user.role, body.scopes)) {
+        if (!this.publicApiKeyService.apiKeyHasValidScopesForRole(req.user, body.scopes)) {
             throw new bad_request_error_1.BadRequestError('Invalid scopes for user role');
         }
         await this.publicApiKeyService.updateApiKeyForUser(req.user, apiKeyId, body);
         return { success: true };
     }
     async getApiKeyScopes(req, _res) {
-        const { role } = req.user;
-        const scopes = (0, permissions_1.getApiKeyScopesForRole)(role);
+        const scopes = (0, permissions_1.getApiKeyScopesForRole)(req.user);
         return scopes;
     }
 };

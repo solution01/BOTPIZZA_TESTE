@@ -14,31 +14,74 @@ const db_1 = require("@n8n/db");
 const di_1 = require("@n8n/di");
 const cache_service_1 = require("../services/cache/cache.service");
 let OwnershipService = class OwnershipService {
-    constructor(cacheService, userRepository, projectRepository, projectRelationRepository, sharedWorkflowRepository) {
+    constructor(cacheService, userRepository, projectRelationRepository, sharedWorkflowRepository) {
         this.cacheService = cacheService;
         this.userRepository = userRepository;
-        this.projectRepository = projectRepository;
         this.projectRelationRepository = projectRelationRepository;
         this.sharedWorkflowRepository = sharedWorkflowRepository;
     }
+    copyProject(project) {
+        return {
+            ...project,
+        };
+    }
+    reconstructProject(project) {
+        if (typeof project !== 'object' || project === null) {
+            return undefined;
+        }
+        return Object.assign(new db_1.Project(), project);
+    }
+    copyUser(user) {
+        return {
+            ...user,
+            role: { ...user.role, scopes: [...user.role.scopes] },
+        };
+    }
+    reconstructUser(cachedUser) {
+        if (typeof cachedUser !== 'object' || cachedUser === null) {
+            return undefined;
+        }
+        const user = Object.assign(new db_1.User(), cachedUser);
+        if ('role' in cachedUser && cachedUser.role && typeof cachedUser.role === 'object') {
+            user.role = Object.assign(new db_1.Role(), cachedUser.role);
+            if ('scopes' in cachedUser.role && Array.isArray(cachedUser.role.scopes)) {
+                user.role.scopes = cachedUser.role.scopes.map((scope) => {
+                    const x = Object.assign(new db_1.Scope(), scope);
+                    return x;
+                });
+            }
+            return user;
+        }
+        return undefined;
+    }
     async getWorkflowProjectCached(workflowId) {
         const cachedValue = await this.cacheService.getHashValue('workflow-project', workflowId);
-        if (cachedValue)
-            return this.projectRepository.create(cachedValue);
+        if (cachedValue) {
+            const project = this.reconstructProject(cachedValue);
+            if (project)
+                return project;
+        }
         const sharedWorkflow = await this.sharedWorkflowRepository.findOneOrFail({
             where: { workflowId, role: 'workflow:owner' },
             relations: ['project'],
         });
-        void this.cacheService.setHash('workflow-project', { [workflowId]: sharedWorkflow.project });
+        void this.cacheService.setHash('workflow-project', {
+            [workflowId]: this.copyProject(sharedWorkflow.project),
+        });
         return sharedWorkflow.project;
     }
     async getPersonalProjectOwnerCached(projectId) {
         const cachedValue = await this.cacheService.getHashValue('project-owner', projectId);
-        if (cachedValue)
-            return this.userRepository.create(cachedValue);
+        if (cachedValue) {
+            const user = this.reconstructUser(cachedValue);
+            if (user)
+                return user;
+        }
         const ownerRel = await this.projectRelationRepository.getPersonalProjectOwners([projectId]);
         const owner = ownerRel[0]?.user ?? null;
-        void this.cacheService.setHash('project-owner', { [projectId]: owner });
+        if (owner) {
+            void this.cacheService.setHash('project-owner', { [projectId]: this.copyUser(owner) });
+        }
         return owner;
     }
     addOwnedByAndSharedWith(rawEntity) {
@@ -74,7 +117,7 @@ let OwnershipService = class OwnershipService {
     }
     async getInstanceOwner() {
         return await this.userRepository.findOneOrFail({
-            where: { role: 'global:owner' },
+            where: { role: { slug: db_1.GLOBAL_OWNER_ROLE.slug } },
         });
     }
 };
@@ -83,7 +126,6 @@ exports.OwnershipService = OwnershipService = __decorate([
     (0, di_1.Service)(),
     __metadata("design:paramtypes", [cache_service_1.CacheService,
         db_1.UserRepository,
-        db_1.ProjectRepository,
         db_1.ProjectRelationRepository,
         db_1.SharedWorkflowRepository])
 ], OwnershipService);

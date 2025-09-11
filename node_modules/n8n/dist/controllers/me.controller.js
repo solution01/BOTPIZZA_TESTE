@@ -76,6 +76,7 @@ let MeController = class MeController {
         await this.userService.update(userId, payload);
         const user = await this.userRepository.findOneOrFail({
             where: { id: userId },
+            relations: ['role'],
         });
         this.logger.info('User updated successfully', { userId });
         this.authService.issueCookie(res, user, req.authInfo?.usedMfa ?? false, req.browserId);

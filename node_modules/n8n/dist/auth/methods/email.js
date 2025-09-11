@@ -10,7 +10,7 @@ const password_utility_1 = require("../../services/password.utility");
 const handleEmailLogin = async (email, password) => {
     const user = await di_1.Container.get(db_1.UserRepository).findOne({
         where: { email },
-        relations: ['authIdentities'],
+        relations: ['authIdentities', 'role'],
     });
     if (user?.password && (await di_1.Container.get(password_utility_1.PasswordUtility).compare(password, user.password))) {
         return user;

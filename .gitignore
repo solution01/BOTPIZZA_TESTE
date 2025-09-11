@@ -1,1 +1,22 @@
-/auth_info_baileys
+ # Logs
+ logs
+ *.log
+ npm-debug.log*
+ yarn-debug.log*
+ lerna-debug.log*
+
+ # Dependency directories
+ node_modules/
+
+ # Baileys-pro session
+ QR/
+
+ # Saved media
+ Audio/
+
+ # Environment variables
+ .env
+
+ # PM2
+ .pm2/
+ pm2.log
